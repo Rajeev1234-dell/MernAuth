@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
 
 const EmailVerificationPage = () => {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const isLoading = false;
+
+  const { error, isLoading, verifyEmail } = useAuthStore();
 
   const handleChange = (index, value) => {
     const newCode = [...code];
@@ -32,24 +35,33 @@ const EmailVerificationPage = () => {
         inputRefs.current[index + 1].focus();
       }
     }
-
-    const handleKeyDown = (index, e) => {
-      if (e.key === "Backspace" && !code[index] && index > 0) {
-        inputRefs.current[index - 1].focus();
-      }
-    };
-
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      const verificationCode = code.join("");
-    };
-
-    useEffect(() => {
-      if (code.every((digit) => digit !== "")) {
-        handleSubmit(new Event("submit"));
-      }
-    }, [code]);
   };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Entered code");
+
+    const verificationCode = code.join("");
+    try {
+      await verifyEmail(verificationCode);
+      navigate("/");
+      toast.success("Email verified successfully");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (code.every((digit) => digit !== "")) {
+      handleSubmit(new Event("submit"));
+    }
+  }, [code]);
 
   return (
     <div className="max-w-md w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden">
@@ -66,7 +78,7 @@ const EmailVerificationPage = () => {
           Enter the 6-digit code sent to your email address.
         </p>
 
-        <form className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-between">
             {code.map((digit, index) => (
               <input
@@ -81,6 +93,7 @@ const EmailVerificationPage = () => {
               />
             ))}
           </div>
+          {error && <p className="text-red-500 font-semibold mt-2">{error}</p>}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
