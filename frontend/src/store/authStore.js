@@ -77,6 +77,7 @@ export const useAuthStore = create((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(`${API_URL}/verify-email`, { code });
+
       set({
         user: response.data.user,
         isAuthenticated: true,
@@ -92,19 +93,20 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  //   checkAuth: async () => {
-  //     set({ isCheckingAuth: true, error: null });
-  //     try {
-  //       const response = await axios.get(`${API_URL}/check-auth`);
-  //       set({
-  //         user: response.data.user,
-  //         isAuthenticated: true,
-  //         isCheckingAuth: false,
-  //       });
-  //     } catch (error) {
-  //       set({ error: null, isCheckingAuth: false, isAuthenticated: false });
-  //     }
-  //   },
+  checkAuth: async () => {
+    set({ isCheckingAuth: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/check-auth`);
+
+      set({
+        user: response.data.User,
+        isAuthenticated: true,
+        isCheckingAuth: false,
+      });
+    } catch (error) {
+      set({ error: null, isCheckingAuth: false, isAuthenticated: false });
+    }
+  },
 
   //   forgotPassword: async (email) => {
   //     set({ isLoading: true, error: null });
